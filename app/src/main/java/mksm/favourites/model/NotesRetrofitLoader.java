@@ -8,7 +8,7 @@ import retrofit2.http.GET;
 /**
  * Created by mksm on 06.08.2016.
  */
-public interface NotesRetrofitService {
+public interface NotesRetrofitLoader {
 
 	@GET("/posts")
 	Call<List<Note>> getNotes();

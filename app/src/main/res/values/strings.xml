@@ -3,4 +3,6 @@
     <string name="unmake_favorite">Удалить из избранного?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
+    <string name="noInternetException">Включите интернет и попробуйте еще раз.</string>
+    <string name="cantGetDataException">Не удалось получить список заметок. Попробуйте позже</string>
 </resources>

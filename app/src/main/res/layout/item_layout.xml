@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
-              android:layout_height="48dp"
+              android:layout_height="80dp"
+              android:layout_margin="4dp"
               android:orientation="horizontal">
 
     <LinearLayout
@@ -22,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLength="100"
+            android:maxEms="100"
             android:textSize="12sp"/>
     </LinearLayout>
 
@@ -33,7 +34,6 @@
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
         android:minWidth="24dp"
-
         >
     </ImageView>
 

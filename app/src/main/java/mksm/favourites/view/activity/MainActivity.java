@@ -33,12 +33,34 @@ public class MainActivity extends AppCompatActivity implements MainView, SwipeRe
 				refreshLayout.setRefreshing(true);
 			}
 		});
-		//getPresenter().onCreate();  // не вызываю, потому что будет вызван в onResume
+		getPresenter().onCreate();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		getPresenter().onResume();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		presenter.onDestroy();
+	}
+
+	@Override
+	public void onRefresh() {
+		presenter.onRefresh();
 	}
 
 	@Override
 	public void fillNotes(List<Note> notes) {
-		refreshLayout.setRefreshing(false);
+		refreshLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				refreshLayout.setRefreshing(false);
+			}
+		});
 		ListAdapter adapter = ListAdapter.getInstance(this, notes);
 		listView.setAdapter(adapter);
 
@@ -60,22 +82,5 @@ public class MainActivity extends AppCompatActivity implements MainView, SwipeRe
 			this.presenter = MainPresenter.getInstance(this);
 		}
 		return this.presenter;
-	}
-
-	@Override
-	public void onRefresh() {
-		presenter.getTasks(true);
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		presenter.unbindView();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		getPresenter().getTasks(false); //обновим список из кэша после возвращения
 	}
 }

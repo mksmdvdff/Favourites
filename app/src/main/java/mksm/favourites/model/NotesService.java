@@ -1,8 +1,9 @@
 package mksm.favourites.model;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
-import java.io.IOException;
 import java.util.List;
 
 import mksm.favourites.model.db.CacheTableHandler;
@@ -16,10 +17,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class NotesService {
 
 	private static NotesService sInstance;
-	private final NotesRetrofitService retrofitService;
+	private final NotesRetrofitLoader retrofitService;
 	private final CacheTableHandler cacheTableHandler;
 	private final FavoriteTableHandler favoriteTableHandler;
 	private final List<Integer> favoriteIds;
+	private final ConnectivityManager cm;
 	private List<Note> cachedNotes;
 
 	private NotesService(Context context) {
@@ -28,10 +30,12 @@ public class NotesService {
 				.addConverterFactory(GsonConverterFactory.create())
 				.build();
 
-		retrofitService = retrofit.create(NotesRetrofitService.class);
+		retrofitService = retrofit.create(NotesRetrofitLoader.class);
 		cacheTableHandler = CacheTableHandler.getInstance(context);
 		favoriteTableHandler = FavoriteTableHandler.getInstance(context);
 		favoriteIds = favoriteTableHandler.getAllIds();
+		cm = (ConnectivityManager) context.getApplicationContext().getSystemService(
+				Context.CONNECTIVITY_SERVICE);
 	}
 
 	public static synchronized NotesService getInstance(Context context) {
@@ -42,38 +46,31 @@ public class NotesService {
 		return sInstance;
 	}
 
-	public List<Note> getAllNotesFromWeb() {
-		List<Note> result = null;
+	public List<Note> getAllNotesFromWeb() throws NoInternetException {
+		List<Note> result;
 		try {
+			if (!isOnline()) {
+				throw new NoInternetException();
+			}
 			result = retrofitService.getNotes().execute().body();
 			if (result == null) {
-				throw new RuntimeException("Empty resultList");
+				throw new RuntimeException();
 			} else {
-				for (Note note : result) {
-					if (favoriteIds.contains(note.getId())) {
-						note.setFavorite(true);
-					}
-				}
+				fillFavorites(result);
 				cacheTableHandler.replaceAllNotes(result);
 				cachedNotes = result;
 			}
 
 			return result;
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			throw new RuntimeException(ex);
-		} finally {
-			cachedNotes = cacheTableHandler.getAllNotes();
 		}
 	}
 
 	public List<Note> getAllNotesFromCache() {
 		if (cachedNotes == null || cachedNotes.isEmpty()) {
 			cachedNotes = cacheTableHandler.getAllNotes();
-			for (Note note : cachedNotes) {
-				if (favoriteIds.contains(note.getId())) {
-					note.setFavorite(true);
-				}
-			}
+			fillFavorites(cachedNotes);
 		}
 
 		return cachedNotes;
@@ -87,11 +84,25 @@ public class NotesService {
 			favoriteIds.remove((Integer) id);  //здесь без приведения вызывался не тот remove()
 			favoriteTableHandler.makeNotFavorite(id);
 		}
-		for (Note note : cachedNotes) {
+		fillFavorites(cachedNotes);
+	}
+
+	private void fillFavorites(List<Note> notes) {
+		for (Note note : notes) {
 			if (favoriteIds.contains(note.getId())) {
-				note.setFavorite(favorite);
+				note.setFavorite(true);
+			} else {
+				note.setFavorite(false);
 			}
 		}
+	}
+
+	private boolean isOnline() {
+		NetworkInfo netInfo = cm.getActiveNetworkInfo();
+		return netInfo != null && netInfo.isConnectedOrConnecting();
+	}
+
+	public static class NoInternetException extends Exception {
 	}
 
 

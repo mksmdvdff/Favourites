@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 import java.util.ArrayList;
 import java.util.List;
 
+import mksm.favourites.R;
 import mksm.favourites.model.Note;
+import mksm.favourites.model.NotesService;
 import mksm.favourites.view.BasicView;
 import mksm.favourites.view.FakeMainView;
 import mksm.favourites.view.FakeView;
@@ -18,7 +20,6 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 
 
 	private static MainPresenter sInstance;
-	private boolean isLoading;
 
 	private MainPresenter(BasicView view) {
 		super(view);
@@ -43,16 +44,23 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 		return view;
 	}
 
-	public boolean isLoading() {
-		return isLoading;
+	public void onCreate() {
+		//getTasks(false);
 	}
 
-	public void onCreate() {
+	public void onResume() {
 		getTasks(false);
 	}
 
+	public void onDestroy() {
+		unbindView();
+	}
+
+	public void onRefresh() {
+		getTasks(true);
+	}
+
 	public void getTasks(boolean fromWeb) {
-		isLoading = true;
 		DownloadNotesTask task = new DownloadNotesTask(fromWeb);
 		task.execute();
 	}
@@ -74,6 +82,8 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 	private class DownloadNotesTask extends AsyncTask<Void, Void, List<Note>> {
 
 		private boolean fromWeb;
+		private boolean exceptionCaught;
+		private boolean noInternetExceptionCaught;
 
 		public DownloadNotesTask(boolean fromWeb) {
 			this.fromWeb = fromWeb;
@@ -86,8 +96,10 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 				if (fromWeb) {
 					result = notesService.getAllNotesFromWeb();
 				}
+			} catch (NotesService.NoInternetException ex) {
+				noInternetExceptionCaught = true;
 			} catch (Exception ex) {
-				getView().makeToast("Не удалось получить список заметок. Попробуйте позже");
+				exceptionCaught = true;
 			} finally {
 				if (result == null || result.isEmpty()) {
 					result = notesService.getAllNotesFromCache();
@@ -102,7 +114,13 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 
 		@Override
 		protected void onPostExecute(final List<Note> result) {
-			MainPresenter.this.isLoading = false;
+			if (noInternetExceptionCaught)
+				getView().makeToast(getView().getContext().getResources()
+						.getString(R.string.noInternetException));
+			if (exceptionCaught) {
+				getView().makeToast(getView().getContext().getResources()
+						.getString(R.string.cantGetDataException));
+			}
 			((MainView) MainPresenter.this.getView()).fillNotes(result);
 		}
 	}
