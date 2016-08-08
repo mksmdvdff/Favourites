@@ -13,7 +13,6 @@ import java.util.List;
 
 import mksm.favourites.R;
 import mksm.favourites.model.Note;
-import mksm.favourites.presenter.MainPresenter;
 import mksm.favourites.view.BasicView;
 
 /**
@@ -23,7 +22,6 @@ public class ListAdapter extends ArrayAdapter<Note> {
 
 	private final static int layout = R.layout.item_layout;
 	private static ListAdapter sInstance;
-	private final MainPresenter mainPresenter;
 	private Context context;
 	private List<Note> notes;
 
@@ -31,7 +29,6 @@ public class ListAdapter extends ArrayAdapter<Note> {
 		super(view.getContext(), layout, notes);
 		this.context = view.getContext();
 		this.notes = notes;
-		this.mainPresenter = MainPresenter.getInstance(view);
 	}
 
 	public static synchronized ListAdapter getInstance(BasicView view, List<Note> notes) {

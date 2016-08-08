@@ -55,7 +55,7 @@ public class NoteActivity extends AppCompatActivity implements BasicView {
 		favIcon.setImageResource(isFavorite ? R.drawable.fav : R.drawable.not_fav);
 		favIcon.setTag(isFavorite ? R.drawable.fav : R.drawable.not_fav);
 		noteId = b.getInt(NOTE_ID);
-		favIcon.setOnClickListener(new OnFavIconListener(getPresenter(), noteId));
+		favIcon.setOnClickListener(new OnFavIconListener(this, getPresenter(), noteId));
 	}
 
 	@Override

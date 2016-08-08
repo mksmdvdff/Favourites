@@ -91,9 +91,9 @@ public class MainPresenter extends BasicPresenter implements FavPresenter {
 			} finally {
 				if (result == null || result.isEmpty()) {
 					result = notesService.getAllNotesFromCache();
-					if (result == null) { //еще нет закэшированных значений - загрузим с вэба
+					if (result == null || result.isEmpty()) { //еще нет закэшированных значений - загрузим с вэба
 						fromWeb = true;
-						doInBackground();
+						result = doInBackground();
 					}
 				}
 			}

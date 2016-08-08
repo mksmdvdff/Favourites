@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity implements MainView, SwipeRe
 
 	private MainPresenter presenter;
 	private SwipeRefreshLayout refreshLayout;
-	//private ProgressBar progressBar;
 	private ListView listView;
 
 	@Override
@@ -27,16 +26,19 @@ public class MainActivity extends AppCompatActivity implements MainView, SwipeRe
 		setContentView(R.layout.main_layout);
 		refreshLayout = (SwipeRefreshLayout) findViewById(R.id.main_swiperefresh);
 		refreshLayout.setOnRefreshListener(this);
-		//progressBar = (ProgressBar) findViewById(R.id.main_progress);
 		listView = (ListView) findViewById(R.id.main_list);
-		showLoading(true);
-		getPresenter().onCreate();
+		refreshLayout.post(new Runnable() {
+			@Override
+			public void run() {
+				refreshLayout.setRefreshing(true);
+			}
+		});
+		//getPresenter().onCreate();  // не вызываю, потому что будет вызван в onResume
 	}
 
 	@Override
 	public void fillNotes(List<Note> notes) {
 		refreshLayout.setRefreshing(false);
-		showLoading(false);
 		ListAdapter adapter = ListAdapter.getInstance(this, notes);
 		listView.setAdapter(adapter);
 
@@ -58,10 +60,6 @@ public class MainActivity extends AppCompatActivity implements MainView, SwipeRe
 			this.presenter = MainPresenter.getInstance(this);
 		}
 		return this.presenter;
-	}
-
-	private void showLoading(final boolean show) {
-		//progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
 	}
 
 	@Override

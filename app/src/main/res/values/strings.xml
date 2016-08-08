@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Favourites</string>
+    <string name="unmake_favorite">Удалить из избранного?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
 </resources>
